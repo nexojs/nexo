@@ -21,4 +21,5 @@ A Deno and Next Cocktail
 
 ## Future ideas
 - [Emotion](https://github.com/emotion-js/emotion) css support
+- Live reload
 - Lazy bundling of client js
