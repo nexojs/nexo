@@ -1,26 +1,40 @@
-import { Application, Router, render, send, join, Sha1, exists, basename, extname, writeFileStr, relative } from "./deps.js";
+import {
+  Application,
+  Router,
+  render,
+  send,
+  join,
+  Sha1,
+  exists,
+  basename,
+  extname,
+  writeFileStr,
+  relative,
+} from "./deps.js";
 import { HotFs } from "./hotfs.ts";
 
 export interface Ctx {
-  app: Application,
-  router: Router,
-  render: typeof render,
-  files: Function,
-  client: Record<string, { path: string, html: string }>
+  app: Application;
+  router: Router;
+  render: typeof render;
+  files: Function;
+  client: Record<string, { path: string; html: string }>;
 }
 
-export const nexo = async function({
+export const nexo = async function ({
   port = 8000,
-  watch = true,
+  hot = true,
+  hotImport,
   boot,
-  staticDir = join(Deno.cwd(), 'public'),
-  libDir = join(Deno.cwd(), 'lib')
+  staticDir = join(Deno.cwd(), "public"),
+  libDir = join(Deno.cwd(), "lib"),
 }: {
-  port?: number,
-  watch?: boolean,
-  staticDir?: string,
-  libDir?: string,
-  boot: Function
+  port?: number;
+  hot?: boolean;
+  hotImport?: (m: any) => Promise<any>;
+  staticDir?: string;
+  libDir?: string;
+  boot: Function;
 }) {
   let abortController: AbortController;
 
@@ -31,34 +45,36 @@ export const nexo = async function({
     hotPrefix: "hot",
     onReload: function () {
       initApp();
-    }
+    },
   });
 
-  if (watch) {
+  hot = !!hotImport && hot;
+
+  if (hot) {
     await hotfs.init();
   }
 
-  const bundleClient = async function() {
-    const clientDir = join((watch ? hotfs.getHotDir(): libDir), 'client')
+  const bundleClient = async function () {
+    const clientDir = join((hot ? hotfs.getHotDir() : libDir), "client");
     if (!await exists(clientDir)) {
       return {};
     }
 
-    const distDir = join(staticDir, '.nexo');
+    const distDir = join(staticDir, ".nexo");
     if (await exists(distDir)) {
       await Deno.remove(distDir, {
-        recursive: true
-      })
+        recursive: true,
+      });
     }
-    await Deno.mkdir(distDir)
+    await Deno.mkdir(distDir);
 
-    const result: Ctx['client'] = {}
-    
+    const result: Ctx["client"] = {};
+
     for await (const dirEntry of Deno.readDir(clientDir)) {
       const abs = join(clientDir, dirEntry.name);
       const [diag, out] = await Deno.bundle(abs, undefined, {
-        jsxFactory: 'h'
-      })
+        jsxFactory: "h",
+      });
       if (diag) {
         for (const diagItem of diag) {
           console.log(diagItem);
@@ -69,21 +85,24 @@ export const nexo = async function({
         sha1.update(out);
 
         const ext = extname(dirEntry.name);
-        const base = basename(dirEntry.name, ext)
-        const staticName = join(distDir, `${base}.${sha1}.js`)
+        const base = basename(dirEntry.name, ext);
+        const staticName = join(distDir, `${base}.${sha1}.js`);
         await writeFileStr(staticName, out);
 
-        const browserPath = '/' + relative(staticDir, staticName);
-        result[base] = { path: browserPath, html: `<script type="module" src="${browserPath}"></script>` }
+        const browserPath = "/" + relative(staticDir, staticName);
+        result[base] = {
+          path: browserPath,
+          html: `<script type="module" src="${browserPath}"></script>`,
+        };
       }
     }
 
     return result;
-  }
+  };
 
   const fileMiddleware = async (context: any, next: any) => {
     const filePath = join(staticDir, context.request.url.pathname);
-  
+
     if (!await exists(filePath)) {
       return await next();
     }
@@ -95,7 +114,7 @@ export const nexo = async function({
   };
 
   const initApp = async function () {
-    await Deno.mkdir(staticDir, { recursive: true })
+    await Deno.mkdir(staticDir, { recursive: true });
     const client = await bundleClient();
 
     const restart = !!serverRef.current;
@@ -118,15 +137,15 @@ export const nexo = async function({
       app,
       render,
       router,
-      files: fileMiddleware
+      files: fileMiddleware,
     };
 
-    if (watch) {
+    if (hot && hotImport) {
       const hotDir = hotfs.getHotDir();
-      const importPath = join(hotDir, 'boot.tsx')
+      const importPath = join(hotDir, "boot.tsx");
 
       try {
-        const imports = await import(importPath);
+        const imports = await hotImport(importPath);
         await imports.default(ctx);
       } catch (err) {
         console.error(err);
@@ -134,16 +153,14 @@ export const nexo = async function({
     } else {
       boot(ctx);
     }
-    
 
     app.listen({
       port,
       signal: abortController.signal,
     }, serverRef);
 
-    console.log(`Nexo ${restart ? 're':''}started`);
+    console.log(`Nexo ${restart ? "re" : ""}started`);
   };
 
   initApp();
-}
-
+};

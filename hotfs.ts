@@ -17,7 +17,7 @@ export class HotFs {
   #dir: string;
   #hotPrefix: string;
   #onReload: Function;
-  #hotDir = ''
+  #hotDir = "";
   #debounce: number;
 
   constructor({
