@@ -8,7 +8,6 @@ import {
   exists,
   basename,
   extname,
-  writeFileStr,
   relative,
 } from "./deps.js";
 import { HotFs } from "./hotfs.ts";
@@ -42,8 +41,8 @@ export const nexo = async function ({
   const hotfs = new HotFs({
     dir: libDir,
     hotPrefix: "hot",
-    onReload: function () {
-      initApp();
+    onReload: async function () {
+      await initApp();
     },
   });
 
@@ -90,7 +89,7 @@ export const nexo = async function ({
         const ext = extname(dirEntry.name);
         const base = basename(dirEntry.name, ext);
         const staticName = join(distDir, `${base}${fileHash}.js`);
-        await writeFileStr(staticName, out);
+        await Deno.writeTextFile(staticName, out);
 
         const browserPath = "/" + relative(staticDir, staticName);
         result[base] = {
@@ -161,5 +160,8 @@ export const nexo = async function ({
     console.log(`Nexo ${restart ? "re" : ""}started`);
   };
 
-  initApp();
+  await initApp();
+  if (hot) {
+    hotfs.initWatch();
+  }
 };
