@@ -80,12 +80,16 @@ export const nexo = async function ({
         }
       }
       if (out) {
-        const sha1 = new Sha1();
-        sha1.update(out);
+        let fileHash = "";
+        if (!hot) {
+          const sha1 = new Sha1();
+          sha1.update(out);
+          fileHash += "." + sha1;
+        }
 
         const ext = extname(dirEntry.name);
         const base = basename(dirEntry.name, ext);
-        const staticName = join(distDir, `${base}.${sha1}.js`);
+        const staticName = join(distDir, `${base}${fileHash}.js`);
         await writeFileStr(staticName, out);
 
         const browserPath = "/" + relative(staticDir, staticName);
