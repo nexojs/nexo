@@ -3,15 +3,15 @@ export {
   join,
   basename,
   extname,
-} from "https://deno.land/std/path/mod.ts";
+} from "https://deno.land/std@0.51.0/path/mod.ts";
 export {
   copy,
   exists,
   move,
   writeFileStr,
-} from "https://deno.land/std/fs/mod.ts";
-export { signal } from "https://deno.land/std/signal/mod.ts";
-export { Sha1 } from "https://deno.land/std/hash/sha1.ts";
+} from "https://deno.land/std@0.51.0/fs/mod.ts";
+export { signal } from "https://deno.land/std@0.51.0/signal/mod.ts";
+export { Sha1 } from "https://deno.land/std@0.51.0/hash/sha1.ts";
 
 export {
   Application,
