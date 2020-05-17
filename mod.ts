@@ -116,14 +116,6 @@ export const nexo = async function ({
     await Deno.mkdir(staticDir, { recursive: true });
     const client = await bundleClient();
 
-    const restart = abortController && listener;
-
-    if (restart) {
-      abortController.abort();
-      await listener;
-    }
-
-    abortController = new AbortController();
     const app = new Application();
     const router = new Router();
 
@@ -146,9 +138,17 @@ export const nexo = async function ({
         console.error(err);
       }
     } else {
-      boot(ctx);
+      await boot(ctx);
     }
 
+    const restart = abortController && listener;
+
+    if (restart) {
+      abortController.abort();
+      await listener;
+    }
+
+    abortController = new AbortController();
     listener = app.listen({
       port,
       signal: abortController.signal,
