@@ -37,8 +37,7 @@ export const nexo = async function ({
   boot: Function;
 }) {
   let abortController: AbortController;
-
-  const serverRef: { current?: any } = {};
+  let listener: Promise<any>;
 
   const hotfs = new HotFs({
     dir: libDir,
@@ -117,15 +116,11 @@ export const nexo = async function ({
     await Deno.mkdir(staticDir, { recursive: true });
     const client = await bundleClient();
 
-    const restart = !!serverRef.current;
-
-    if (abortController) {
-      abortController.abort();
-    }
+    const restart = abortController && listener;
 
     if (restart) {
-      serverRef.current.close();
-      delete serverRef.current;
+      abortController.abort();
+      await listener;
     }
 
     abortController = new AbortController();
@@ -154,10 +149,10 @@ export const nexo = async function ({
       boot(ctx);
     }
 
-    app.listen({
+    listener = app.listen({
       port,
       signal: abortController.signal,
-    }, serverRef);
+    });
 
     console.log(`Nexo ${restart ? "re" : ""}started`);
   };
