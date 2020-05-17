@@ -9,6 +9,7 @@ import {
   basename,
   extname,
   relative,
+  move,
 } from "./deps.js";
 import { HotFs } from "./hotfs.ts";
 
@@ -52,19 +53,28 @@ export const nexo = async function ({
     await hotfs.init();
   }
 
-  const bundleClient = async function () {
+  const nextDistDir = join(staticDir, ".nexo-next");
+  const distDir = join(staticDir, ".nexo");
+
+  const publishNextClientBundle = async function () {
+    if (await exists(nextDistDir)) {
+      await Deno.remove(distDir, { recursive: true });
+    }
+    await move(nextDistDir, distDir);
+  };
+
+  const prepareNextClientBundle = async function () {
     const clientDir = join((hot ? hotfs.getHotDir() : libDir), "client");
     if (!await exists(clientDir)) {
       return {};
     }
 
-    const distDir = join(staticDir, ".nexo");
-    if (await exists(distDir)) {
-      await Deno.remove(distDir, {
+    if (await exists(nextDistDir)) {
+      await Deno.remove(nextDistDir, {
         recursive: true,
       });
     }
-    await Deno.mkdir(distDir);
+    await Deno.mkdir(nextDistDir);
 
     const result: Ctx["client"] = {};
 
@@ -88,10 +98,12 @@ export const nexo = async function ({
 
         const ext = extname(dirEntry.name);
         const base = basename(dirEntry.name, ext);
-        const staticName = join(distDir, `${base}${fileHash}.js`);
-        await Deno.writeTextFile(staticName, out);
+        const bundleName = `${base}${fileHash}.js`;
 
-        const browserPath = "/" + relative(staticDir, staticName);
+        await Deno.writeTextFile(join(nextDistDir, bundleName), out);
+
+        const browserPath = "/" +
+          relative(staticDir, join(distDir, bundleName));
         result[base] = {
           path: browserPath,
           html: `<script type="module" src="${browserPath}"></script>`,
@@ -117,7 +129,7 @@ export const nexo = async function ({
 
   const initApp = async function () {
     await Deno.mkdir(staticDir, { recursive: true });
-    const client = await bundleClient();
+    const client = await prepareNextClientBundle();
 
     const app = new Application();
     const router = new Router();
@@ -156,6 +168,7 @@ export const nexo = async function ({
       port,
       signal: abortController.signal,
     });
+    await publishNextClientBundle();
 
     console.log(`Nexo ${restart ? "re" : ""}started`);
   };
