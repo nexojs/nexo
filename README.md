@@ -16,6 +16,7 @@ A Deno and Next Cocktail
 
 ## Features
 - Hot module replace for server
+- Outputs server errors in browser
 - [Preact](https://github.com/preactjs/preact) SSR
 - Auto bundling and hashing of client js assets
 
