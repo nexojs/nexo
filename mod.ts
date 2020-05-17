@@ -12,6 +12,7 @@ import {
   move,
 } from "./deps.js";
 import { HotFs } from "./hotfs.ts";
+import { stripAnsi } from "./stripAnsi.js";
 
 export interface Ctx {
   app: Application;
@@ -142,18 +143,27 @@ export const nexo = async function ({
       files: fileMiddleware,
     };
 
-    if (hot && hotImport) {
-      const hotDir = hotfs.getHotDir();
-      const importPath = join(hotDir, "boot.tsx");
+    try {
+      if (hot && hotImport) {
+        const hotDir = hotfs.getHotDir();
+        const importPath = join(hotDir, "boot.tsx");
 
-      try {
         const imports = await hotImport(importPath);
         await imports.default(ctx);
-      } catch (err) {
-        console.error(err);
+      } else {
+        await boot(ctx);
       }
-    } else {
-      await boot(ctx);
+    } catch (err) {
+      console.error(err);
+      app.use(function (ctx) {
+        ctx.response.body = `
+<html>
+  <body>
+    <pre>${stripAnsi(err.message).trim()}</pre>
+  </body>
+</html>`;
+        ctx.response.status = 500;
+      });
     }
 
     const restart = abortController && listener;
