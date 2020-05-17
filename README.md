@@ -1,6 +1,8 @@
 # nexo
 A Deno and Next Cocktail
 
+![](demo.gif)
+
 ## Quick start and example
 - [Nexo Starter](https://github.com/nexojs/starter)
 - `npx degit nexojs/starter`
