@@ -1,7 +1,6 @@
 import {
   Application,
   Router,
-  render,
   send,
   join,
   Sha1,
@@ -13,11 +12,13 @@ import {
 } from "./deps.js";
 import { HotFs } from "./hotfs.ts";
 import { stripAnsi } from "./stripAnsi.js";
+import { render } from "./ssr.ts";
+export * from "./ssr.ts";
 
 export interface Ctx {
   app: Application;
   router: Router;
-  render: typeof render;
+  render: Function;
   files: Function;
   client: Record<string, { path: string; html: string }>;
 }
@@ -112,6 +113,11 @@ export const nexo = async function ({
       }
     }
 
+    result.nexoDev = {
+      path: "",
+      html: "",
+    };
+
     return result;
   };
 
@@ -135,10 +141,14 @@ export const nexo = async function ({
     const app = new Application();
     const router = new Router();
 
+    const renderWithCtx = function (createSections: Function, tpl?: any) {
+      return render(ctx, createSections, tpl);
+    };
+
     const ctx: Ctx = {
       client,
       app,
-      render,
+      render: renderWithCtx,
       router,
       files: fileMiddleware,
     };

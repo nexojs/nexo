@@ -11,7 +11,7 @@ A Deno and Next Cocktail
 - Only require [Deno](https://github.com/denoland/deno) on the system
 - [Oak](https://github.com/oakserver/oak) for http
 - [Preact](https://github.com/preactjs/preact) for dom rendering
-- [Emotion](https://github.com/emotion-js/emotion) for css (to be implemented)
+- [Otion](https://github.com/kripod/otion) for css
 - No filename based routing
 - No client side routing
 - Basic client side code splitting using window "exports"
@@ -20,9 +20,9 @@ A Deno and Next Cocktail
 - Hot module replace for server
 - Outputs server errors in browser
 - [Preact](https://github.com/preactjs/preact) SSR
+- [Otion](https://github.com/kripod/otion) SSR
 - Auto bundling and hashing of client js assets
 
 ## Future ideas
-- [Emotion](https://github.com/emotion-js/emotion) css support
 - Live reload
 - Lazy bundling of client js
