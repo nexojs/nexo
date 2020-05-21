@@ -84,6 +84,8 @@ export const nexo = async function ({
     }
     await Deno.mkdir(nextDistDir);
 
+    let nextDevCode = nexoDevCode;
+
     const result: Ctx["client"] = {};
 
     for await (const dirEntry of Deno.readDir(clientDir)) {
@@ -93,7 +95,11 @@ export const nexo = async function ({
       });
       if (diag) {
         for (const diagItem of diag) {
-          console.log(diagItem);
+          console.error(diagItem);
+          nextDevCode +=
+            `<script>console.error('Error while bundling "${dirEntry.name}"', ${
+              JSON.stringify(diagItem)
+            })</script>`;
         }
       }
       if (out) {
@@ -121,7 +127,7 @@ export const nexo = async function ({
 
     result.nexoDev = {
       path: "",
-      html: nexoDevCode,
+      html: nextDevCode,
     };
 
     return result;
