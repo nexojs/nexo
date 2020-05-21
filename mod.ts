@@ -13,6 +13,7 @@ import {
 import { HotFs } from "./hotfs.ts";
 import { stripAnsi } from "./stripAnsi.js";
 import { render } from "./ssr.ts";
+import * as DevMiddleware from "./devMiddleware.ts";
 export * from "./ssr.ts";
 
 export interface Ctx {
@@ -48,12 +49,17 @@ export const nexo = async function ({
       await initApp();
     },
   });
-
   hot = !!hotImport && hot;
-
   if (hot) {
     await hotfs.init();
   }
+
+  const devMiddleware = DevMiddleware.create();
+
+  const nexoDevCode = !hot ? "" : `
+<script>
+  ${devMiddleware.clientCode}
+</script>`;
 
   const nextDistDir = join(staticDir, ".nexo-next");
   const distDir = join(staticDir, ".nexo");
@@ -115,7 +121,7 @@ export const nexo = async function ({
 
     result.nexoDev = {
       path: "",
-      html: "",
+      html: nexoDevCode,
     };
 
     return result;
@@ -140,6 +146,10 @@ export const nexo = async function ({
 
     const app = new Application();
     const router = new Router();
+
+    if (hot) {
+      app.use(devMiddleware.middleware);
+    }
 
     const renderWithCtx = function (createSections: Function, tpl?: any) {
       return render(ctx, createSections, tpl);
@@ -169,6 +179,7 @@ export const nexo = async function ({
         ctx.response.body = `
 <html>
   <body>
+    ${nexoDevCode}
     <pre>${stripAnsi(err.message).trim()}</pre>
   </body>
 </html>`;
@@ -177,8 +188,9 @@ export const nexo = async function ({
     }
 
     const restart = abortController && listener;
-
     if (restart) {
+      await devMiddleware.sendReload();
+
       abortController.abort();
       await listener;
     }

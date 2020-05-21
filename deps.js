@@ -12,6 +12,8 @@ export {
 export { signal } from "https://deno.land/std@0.51.0/signal/mod.ts";
 export { Sha1 } from "https://deno.land/std@0.51.0/hash/sha1.ts";
 
+export { acceptWebSocket } from "https://deno.land/std@0.51.0/ws/mod.ts";
+
 export {
   Application,
   Router,
