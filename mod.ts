@@ -65,7 +65,7 @@ export const nexo = async function ({
   const distDir = join(staticDir, ".nexo");
 
   const publishNextClientBundle = async function () {
-    if (await exists(nextDistDir)) {
+    if (await exists(distDir)) {
       await Deno.remove(distDir, { recursive: true });
     }
     await move(nextDistDir, distDir);
