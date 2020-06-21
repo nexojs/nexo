@@ -9,17 +9,18 @@ import {
   extname,
   relative,
   move,
-} from "./deps.js";
+} from "./deps.ts";
 import { HotFs } from "./hotfs.ts";
 import { stripAnsi } from "./stripAnsi.js";
-import { render } from "./ssr.ts";
+import { renderPage } from "./ssr.ts";
 import * as DevMiddleware from "./devMiddleware.ts";
-export * from "./ssr.ts";
+
+export { renderPage, pageCss, pageHtml } from "./ssr.ts";
 
 export interface Ctx {
   app: Application;
   router: Router;
-  render: Function;
+  renderPage: Function;
   files: Function;
   client: Record<string, { path: string; html: string }>;
 }
@@ -90,9 +91,15 @@ export const nexo = async function ({
 
     for await (const dirEntry of Deno.readDir(clientDir)) {
       const abs = join(clientDir, dirEntry.name);
+      console.log(abs);
+
       const [diag, out] = await Deno.bundle(abs, undefined, {
         jsxFactory: "h",
+        lib: ["DOM", "ESNext"],
       });
+
+      console.log("blub");
+
       if (diag) {
         for (const diagItem of diag) {
           console.error(diagItem);
@@ -157,14 +164,15 @@ export const nexo = async function ({
       app.use(devMiddleware.middleware);
     }
 
+    client.bundle = { html: "", path: "" };
     const renderWithCtx = function (createSections: Function, tpl?: any) {
-      return render(ctx, createSections, tpl);
+      return renderPage(ctx, createSections, tpl);
     };
 
     const ctx: Ctx = {
       client,
       app,
-      render: renderWithCtx,
+      renderPage: renderWithCtx,
       router,
       files: fileMiddleware,
     };

@@ -1,6 +1,6 @@
 import {
   acceptWebSocket,
-} from "./deps.js";
+} from "./deps.ts";
 
 export const create = function () {
   let devSockets: any = [];

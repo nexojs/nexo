@@ -1,4 +1,4 @@
-import { join, move, signal, ensureSymlink } from "./deps.js";
+import { join, move, signal, ensureSymlink } from "./deps.ts";
 
 let hotId = 0;
 

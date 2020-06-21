@@ -1,10 +1,11 @@
-import { setup, css as css_ } from "./otion.js";
-import { filterOutUnusedRules, getStyleTag, VirtualInjector } from "./deps.js";
-import { render as preactRender } from "./deps.js";
+import {
+  filterOutUnusedRules,
+  getStyleTag,
+  VirtualInjector,
+  setup,
+} from "./deps.ts";
 
-export const jsx = preactRender;
-
-export const html = function ({
+export const pageHtml = function ({
   head = "",
   title = "",
   body = "",
@@ -25,12 +26,12 @@ export const html = function ({
 </html>`;
 };
 
-export const render = function (
+export const renderPage = function (
   ctx: any,
   createSections: Function,
-  tpl = html,
+  tpl = pageHtml,
 ) {
-  const injectCss = css();
+  const injectCss = pageCss();
 
   const sections = createSections(ctx);
   sections.body = sections.body || "";
@@ -39,7 +40,7 @@ export const render = function (
   return injectCss(tpl(sections));
 };
 
-export const css = function () {
+export const pageCss = function () {
   const sharedOptions = {};
   const injector = VirtualInjector();
 

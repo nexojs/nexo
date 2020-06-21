@@ -30,6 +30,7 @@ Preact apps with Deno
 - [Otion](https://github.com/kripod/otion) for css
 
 ## Future ideas
+- Output current address when starting Nexo
 - Live reload scroll position recovery
 - Minifying client bundles
 - 404 Page template
