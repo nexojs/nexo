@@ -1,0 +1,10 @@
+{
+                                "name": "nexo",
+                                "description": "Preact apps with Deno",
+                                "homepage": "https://github.com/nexojs/nexo",
+                                "files": [
+                                  "./**/*.ts",
+                                  "README.md"
+                                ],
+                                "entry": "./mod.ts"
+                              }
